@@ -1,0 +1,23 @@
+{
+  "name": "polling-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon ./src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/billyc10/polling-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/billyc10/polling-server/issues"
+  },
+  "homepage": "https://github.com/billyc10/polling-server#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
