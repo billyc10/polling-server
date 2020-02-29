@@ -1,10 +1,18 @@
 const express = require('express')
-const bodyParser = require('body-parser');
 const app = express()
-const port = 3000;
+const port = 25565;
 const pollService = require('./services/pollService.js');
 
-app.use(express.json())
+const cors = require('cors');
+
+app.use(function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept'
+    );
+    next();
+    });
 
 app.get('/', function (req, res) {
     res.send('Welcome to the Homepage');
@@ -14,14 +22,9 @@ app.get('/getPoll', function (req, res) {
     res.send(JSON.stringify(pollService.poll));
 })
 
-app.post('/setPoll', function (req, res) {
+app.post('/setPoll', express.json(), cors(), function (req, res) {
     console.log(req.body);
-    /*
-    pollService.poll = {
-        question: "Thotiana",
-        selections: ["A: Bus", "B: Dpwn", "C: Thotiana"],
-        answer: 3
-    };*/
+    pollService.poll = req.body;
 
     //pollService.poll = req.body
     res.send(JSON.stringify(pollService.poll));
