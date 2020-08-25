@@ -1,37 +1,42 @@
 const express = require('express')
 const app = express()
-const port = 25565;
-const pollService = require('./services/pollService.js');
-
 const cors = require('cors');
 
-app.use(function(req, res, next) {
-    res.header('Access-Control-Allow-Origin', 'http://localhost:3000');
-    res.header(
-        'Access-Control-Allow-Headers',
-        'Origin, X-Requested-With, Content-Type, Accept'
-    );
-    next();
-    });
+const pollService = require('./services/pollService.js');
+const port = 25565;
 
+// CORS middleware for all routes
+app.use(cors())
+    
 app.get('/', function (req, res) {
     res.send('Welcome to the Homepage');
 })
 
 app.get('/getPoll', function (req, res) {
-    res.send(JSON.stringify(pollService.poll));
+    // Retrieve the current poll
+    res.send(JSON.stringify(pollService.getPoll()));
 })
 
-app.post('/setPoll', express.json(), cors(), function (req, res) {
+app.post('/setPoll', express.json(), function (req, res) {
+    // Update/set the current poll
     console.log(req.body);
-    pollService.poll = req.body;
 
-    //pollService.poll = req.body
-    res.send(JSON.stringify(pollService.poll));
+    pollService.setPoll(req.body);
+
+    res.send(JSON.stringify(pollService.getPoll()));
 })
 
-app.post('/createPoll', function(req, res) {
+app.post('/submitAnswer', express.json(), function (req, res) {
+    // Add an answer to the submissions tally
+    pollService.submitAnswer(req.body["answer"]);
+    res.send(JSON.stringify(req.body));
 
+    console.log("Submissions: " + pollService.viewSubmissions());
 })
+
+
+/* app.post('/createPoll', function(req, res) {
+
+}) */
 
 app.listen(port, () => console.log(`Example app listening on port ${port}!`))
