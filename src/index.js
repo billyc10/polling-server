@@ -26,6 +26,12 @@ app.post('/setPoll', express.json(), function (req, res) {
     res.send(JSON.stringify(pollService.getPoll()));
 })
 
+app.post('/clearAll', function (req, res) {
+    // Reset API variables
+    pollService.clearAll();
+    res.send('API flushed');
+})
+
 app.post('/submitAnswer', express.json(), function (req, res) {
     // Add an answer to the submissions tally
     pollService.submitAnswer(req.body["answer"]);
@@ -34,9 +40,4 @@ app.post('/submitAnswer', express.json(), function (req, res) {
     console.log("Submissions: " + pollService.viewSubmissions());
 })
 
-
-/* app.post('/createPoll', function(req, res) {
-
-}) */
-
-app.listen(port, () => console.log(`Example app listening on port ${port}!`))
+app.listen(port, () => console.log(`Polling server listening on port ${port}!`))

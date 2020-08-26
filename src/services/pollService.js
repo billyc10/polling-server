@@ -24,9 +24,20 @@ const viewSubmissions = () => {
     return submissions;
 }
 
+const clearAll = () => {
+    poll = {
+        question: '',
+        selections: [],
+        answer: null
+    };
+
+    submissions = [0, 0, 0, 0];
+}
+
 module.exports = {
     getPoll: getPoll,
     setPoll: setPoll,
     submitAnswer: submitAnswer,
-    viewSubmissions: viewSubmissions
+    viewSubmissions: viewSubmissions,
+    clearAll: clearAll
 }
