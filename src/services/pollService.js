@@ -1,7 +1,7 @@
 var poll = {
     question: '',
     selections: [],
-    answer: null
+    answer: ''
 };
 
 var submissions = [0, 0, 0, 0];

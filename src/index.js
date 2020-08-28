@@ -28,6 +28,8 @@ app.post('/setPoll', express.json(), function (req, res) {
 
 app.post('/clearAll', function (req, res) {
     // Reset API variables
+    console.log("All data flushed");
+    
     pollService.clearAll();
     res.send('API flushed');
 })
