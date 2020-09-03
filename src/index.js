@@ -12,11 +12,11 @@ app.get('/', function (req, res) {
     res.send('Polling App API');
 })
 
-app.get("/pollStream", (req, res) => {
+app.get("/pollStream/:id", (req, res) => {
     // Server Sent Events will periodically send out new polls when made available
     // to clients that have connected to this EventSource and listening for 
 
-    console.log('new request from: ' + req.query.id);
+    console.log('new request from: ' + req.params.id);
     
     res.set({
       "Content-Type": "text/event-stream",
@@ -26,12 +26,13 @@ app.get("/pollStream", (req, res) => {
   
     // Function that periodically sends new data to this client
     let eventStream = setInterval(() => {
-        console.log(`Event is happening for ${req.query.id}`);
+        console.log(`Event is happening for ${req.params.id}`);
+
         res.write(`data: ${JSON.stringify(pollService.getPoll())}\n\n`);
     }, 2000)
 
     // Stop sending responses if client closes connection (closes the page)
-    req.on('close', (err) => {
+    req.on('close', () => {
         clearInterval(eventStream);
         res.end();
     })
