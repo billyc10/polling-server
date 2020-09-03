@@ -1,37 +1,41 @@
-var poll = {
-    question: '',
-    selections: [],
-    answer: ''
+var pollInstance = {
+    poll: {
+        question: '',
+        selections: [],
+        answer: ''
+    },
+    submissions: [0, 0, 0, 0]
 };
-
-var submissions = [0, 0, 0, 0];
 
 /* Getters and setters */
 
 const getPoll = () => {
-    return poll;
+    return pollInstance.poll;
 }
 
 const setPoll = (pollData) => {
-    poll = pollData;
+    pollInstance.poll = pollData;
+    pollInstance.submissions = [0, 0, 0, 0];
+    console.log('poll has been set. read to send: ' + !pollInstance.sent);
 }
 
 const submitAnswer = (answer) => {
-    submissions[answer] += 1;
+    pollInstance.submissions[answer] += 1;
 }
 
 const viewSubmissions = () => {
-    return submissions;
+    return pollInstance.submissions;
 }
 
 const clearAll = () => {
-    poll = {
-        question: '',
-        selections: [],
-        answer: null
-    };
-
-    submissions = [0, 0, 0, 0];
+    pollInstance = {
+        poll: {
+            question: '',
+            selections: [],
+            answer: ''
+        },
+        submissions: [0, 0, 0, 0]
+    }
 }
 
 module.exports = {

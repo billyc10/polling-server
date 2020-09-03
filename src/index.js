@@ -3,17 +3,46 @@ const app = express()
 const cors = require('cors');
 
 const pollService = require('./services/pollService.js');
-const port = 25565;
+const port = 5000;
 
 // CORS middleware for all routes
 app.use(cors())
     
 app.get('/', function (req, res) {
-    res.send('Welcome to the Homepage');
+    res.send('Polling App API');
 })
 
+app.get("/pollStream/:id", (req, res) => {
+    // Server Sent Events will periodically send out new polls when made available
+    // to clients that have connected to this EventSource and listening for 
+
+    console.log('Connection open: ' + req.params.id);
+    
+    res.set({
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive"
+    })
+  
+    // Function that periodically sends new data to this client
+    let eventStream = setInterval(() => {
+
+        res.write(`data: ${JSON.stringify(pollService.getPoll())}\n\n`);
+    }, 2000)
+
+    // Stop sending responses if client closes connection (closes the page)
+    req.on('close', () => {
+        clearInterval(eventStream);
+        console.log('Connection close: ' + req.params.id);
+        res.end();
+    })
+
+    // Send initial data
+    res.write(`data: ${JSON.stringify(pollService.getPoll())}\n\n`);
+  })
+
 app.get('/getPoll', function (req, res) {
-    // Retrieve the current poll
+    // Retrieve the currently active poll
     res.send(JSON.stringify(pollService.getPoll()));
 })
 
