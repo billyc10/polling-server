@@ -1,19 +1,34 @@
-var poll = {
-    question: '',
-    selections: [],
-    answer: ''
-};
+var pollInstance = {
+    poll: {
+        question: '',
+        selections: [],
+        answer: ''
+    },
+    new: false
+}
 
 var submissions = [0, 0, 0, 0];
 
 /* Getters and setters */
 
+const newPollAvailable = () => {
+    if (pollInstance.new) {
+        pollInstance.new = false;
+        return true;
+    } else {
+        return false;
+    }
+    
+}
+
 const getPoll = () => {
-    return poll;
+    return pollInstance.poll;
 }
 
 const setPoll = (pollData) => {
-    poll = pollData;
+    pollInstance.poll = pollData;
+    pollInstance.new = true;
+    console.log('new is: ' + pollInstance.new);
 }
 
 const submitAnswer = (answer) => {
@@ -25,16 +40,20 @@ const viewSubmissions = () => {
 }
 
 const clearAll = () => {
-    poll = {
-        question: '',
-        selections: [],
-        answer: null
-    };
+    pollInstance = {
+        poll: {
+            question: '',
+            selections: [],
+            answer: ''
+        },
+        new: false
+    }
 
     submissions = [0, 0, 0, 0];
 }
 
 module.exports = {
+    newPollAvailable: newPollAvailable,
     getPoll: getPoll,
     setPoll: setPoll,
     submitAnswer: submitAnswer,
