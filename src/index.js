@@ -3,7 +3,7 @@ const app = express()
 const cors = require('cors');
 
 const pollService = require('./services/pollService.js');
-const port = 25565;
+const port = 5000;
 
 // CORS middleware for all routes
 app.use(cors())
@@ -26,9 +26,11 @@ app.get("/pollStream/:id", (req, res) => {
   
     // Function that periodically sends new data to this client
     let eventStream = setInterval(() => {
-        console.log(`Event is happening for ${req.params.id}`);
-
-        res.write(`data: ${JSON.stringify(pollService.getPoll())}\n\n`);
+        if (pollService.pollReadyToSend()) {
+            console.log('should be sending out events now');
+            res.write(`data: ${JSON.stringify(pollService.getPoll())}\n\n`);
+            pollService.pollSent();
+        }
     }, 2000)
 
     // Stop sending responses if client closes connection (closes the page)
