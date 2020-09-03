@@ -14,7 +14,7 @@ app.get('/', function (req, res) {
 
 app.get("/pollStream", (req, res) => {
     // Server Sent Events will periodically send out new polls when made available
-    // to clients that have connected to this EventSource
+    // to clients that have connected to this EventSource and listening for 
 
     console.log('new request from: ' + req.query.id);
     
@@ -24,15 +24,17 @@ app.get("/pollStream", (req, res) => {
       Connection: "keep-alive"
     })
   
-    // Periodically check if a poll has been updated. If so, send to the correct users
-    setInterval(() => {
-        console.log(`interval is happening for ${req.query.id}`);
+    // Function that periodically sends new data to this client
+    let eventStream = setInterval(() => {
+        console.log(`Event is happening for ${req.query.id}`);
         res.write(`data: ${JSON.stringify(pollService.getPoll())}\n\n`);
-
-        if (pollService.newPollAvailable()) {
-            console.log('new poll is available');
-        }
     }, 2000)
+
+    // Stop sending responses if client closes connection (closes the page)
+    req.on('close', (err) => {
+        clearInterval(eventStream);
+        res.end();
+    })
   })
 
 app.get('/getPoll', function (req, res) {
