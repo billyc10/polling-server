@@ -1,16 +1,39 @@
-var pollInstance = {
-    poll: {
-        question: '',
-        selections: [],
-        answer: ''
-    },
-    submissions: [0, 0, 0, 0]
-};
+class PollInstance {
+    constructor(poll) {
+        this.poll = poll;
+        this.submissions = [0, 0, 0, 0];
+    }
+}
 
-/* Getters and setters */
+class PollService {
+    constructor() {
+        // Use objects as lookup tables for polls and IDs
+        this.pollDict = {};
+        this.ids = {};
+    }
 
-const getPoll = () => {
-    return pollInstance.poll;
+    generateId() {
+        let id = Math.ceil(Math.random() * 1000);
+        // Generate new ID if already exists in ID table
+        while (this.ids[id]) {
+            id = Math.ceil(Math.random() * 1000);
+        }
+        return id
+    }
+
+    getPoll(id) {
+        // Retrieve poll from dictionary by ID if it exists
+        if (this.pollDict[id] && this.pollDict[id].poll) {
+            return this.pollDict[id].poll;
+        } else {
+            return null;
+        }
+    }
+
+    createPoll(id, pollData) {
+
+        this.pollDict[id] = new PollInstance(pollData);
+    }
 }
 
 const setPoll = (pollData) => {
@@ -39,9 +62,5 @@ const clearAll = () => {
 }
 
 module.exports = {
-    getPoll: getPoll,
-    setPoll: setPoll,
-    submitAnswer: submitAnswer,
-    viewSubmissions: viewSubmissions,
-    clearAll: clearAll
+    PollService
 }
