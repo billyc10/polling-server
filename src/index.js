@@ -62,10 +62,17 @@ app.get("/reponseStream", (req, res) => {
     res.write(`data: ${JSON.stringify(pollService.viewSubmissions(req.query.id))}\n\n`);
 })
 
-app.get('/getPoll', function (req, res) {
-    // Retrieve the currently active poll
-    res.send(JSON.stringify(pollService.getPoll(req.query.id)));
-})
+app.get('/createRoom', function (req, res) {
+    // Creates a room (adds KVP (id: empty poll) in pollDict)
+    // returns ID to client
+    const id = pollService.generateId();
+    
+    if (pollService.createPoll(id, null)){
+        res.status(200).send(JSON.stringify(id));
+    } else {
+        res.sendStatus(500);
+    }
+});
 
 app.post('/createPoll', express.json(), function (req, res) {
     // Update/set the current poll
@@ -74,6 +81,19 @@ app.post('/createPoll', express.json(), function (req, res) {
     } else {
         res.sendStatus(500);
     }
+})
+
+app.get('/connectRoom', function (req, res) {
+    if(req.query.id in pollService.pollDict) {
+        res.sendStatus(200);
+    } else {
+        res.status(400).send('Invalid ID');
+    }
+})
+
+app.get('/getPoll', function (req, res) {
+    // Retrieve the currently active poll
+    res.send(JSON.stringify(pollService.getPoll(req.query.id)));
 })
 
 app.post('/clearAll', function (req, res) {
