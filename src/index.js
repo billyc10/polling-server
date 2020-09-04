@@ -2,8 +2,10 @@ const express = require('express')
 const app = express()
 const cors = require('cors');
 
-const pollService = require('./services/pollService.js');
-const port = 5000;
+const PollService = require('./services/pollService').PollService;
+const pollService = new PollService();
+
+const PORT = 5000;
 
 // CORS middleware for all routes
 app.use(cors())
@@ -12,12 +14,9 @@ app.get('/', function (req, res) {
     res.send('Polling App API');
 })
 
-app.get("/pollStream/:id", (req, res) => {
-    // Server Sent Events will periodically send out new polls when made available
-    // to clients that have connected to this EventSource and listening for 
-
-    console.log('Connection open: ' + req.params.id);
-    
+app.get("/pollStream", (req, res) => {
+    // Server-Sent Event: Periodically send out poll to clients
+    // that have connected to this stream with an eventSource
     res.set({
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
@@ -26,49 +25,77 @@ app.get("/pollStream/:id", (req, res) => {
   
     // Function that periodically sends new data to this client
     let eventStream = setInterval(() => {
-
-        res.write(`data: ${JSON.stringify(pollService.getPoll())}\n\n`);
+        res.write(`data: ${JSON.stringify(pollService.getPoll(req.query.id))}\n\n`);
     }, 2000)
 
     // Stop sending responses if client closes connection (closes the page)
     req.on('close', () => {
         clearInterval(eventStream);
-        console.log('Connection close: ' + req.params.id);
         res.end();
     })
 
     // Send initial data
-    res.write(`data: ${JSON.stringify(pollService.getPoll())}\n\n`);
-  })
+    res.write(`data: ${JSON.stringify(pollService.getPoll(req.query.id))}\n\n`);
+})
+
+app.get("/reponseStream", (req, res) => {
+    // Server-Sent Event: Periodically send out poll responses to clients
+    // that have connected to this stream with an eventSource
+    res.set({
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      Connection: "keep-alive"
+    })
+  
+    // Function that periodically sends new data to this client
+    let eventStream = setInterval(() => {
+        res.write(`data: ${JSON.stringify(pollService.viewSubmissions(req.query.id))}\n\n`);
+    }, 1000)
+
+    // Stop sending responses if client closes connection (closes the page)
+    req.on('close', () => {
+        clearInterval(eventStream);
+        res.end();
+    })
+
+    // Send initial data
+    res.write(`data: ${JSON.stringify(pollService.viewSubmissions(req.query.id))}\n\n`);
+})
 
 app.get('/getPoll', function (req, res) {
     // Retrieve the currently active poll
-    res.send(JSON.stringify(pollService.getPoll()));
+    res.send(JSON.stringify(pollService.getPoll(req.query.id)));
 })
 
-app.post('/setPoll', express.json(), function (req, res) {
+app.post('/createPoll', express.json(), function (req, res) {
     // Update/set the current poll
-    console.log(req.body);
-
-    pollService.setPoll(req.body);
-
-    res.send(JSON.stringify(pollService.getPoll()));
+    if(pollService.createPoll(req.body.id, req.body.poll)) {
+        res.sendStatus(200);
+    } else {
+        res.sendStatus(500);
+    }
 })
 
 app.post('/clearAll', function (req, res) {
-    // Reset API variables
-    console.log("All data flushed");
+    // Flush API
+    if(pollService.clearAll()) {
+        // Reset API variables
+        console.log("All data flushed");
+        res.sendStatus(200);
+    } else {
+        res.sendStatus(500);
+    }
     
-    pollService.clearAll();
-    res.send('API flushed');
 })
 
 app.post('/submitAnswer', express.json(), function (req, res) {
     // Add an answer to the submissions tally
-    pollService.submitAnswer(req.body["answer"]);
-    res.send(JSON.stringify(req.body));
-
-    console.log("Submissions: " + pollService.viewSubmissions());
+    if(pollService.submitAnswer(req.body["id"], req.body["answer"])) {
+        res.sendStatus(200);
+    } else {
+        res.status(400).send("Invalid ID");
+    }
+    
 })
 
-app.listen(port, () => console.log(`Polling server listening on port ${port}!`))
+app.listen(PORT, () => console.log(`Polling server listening on port ${PORT}!`))

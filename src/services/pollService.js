@@ -9,13 +9,12 @@ class PollService {
     constructor() {
         // Use objects as lookup tables for polls and IDs
         this.pollDict = {};
-        this.ids = {};
     }
 
     generateId() {
         let id = Math.ceil(Math.random() * 1000);
-        // Generate new ID if already exists in ID table
-        while (this.ids[id]) {
+        // Generate new ID if this one already attached to poll
+        while (this.pollDict[id]) {
             id = Math.ceil(Math.random() * 1000);
         }
         return id
@@ -31,33 +30,48 @@ class PollService {
     }
 
     createPoll(id, pollData) {
+        // Create a PollInstance for new poll, otherwise update fields
+        // with new poll data and reset submissions
+        if (this.pollDict[id]) {
+            this.pollDict[id].poll = pollData;
+            this.pollDict[id].submissions = [0, 0, 0, 0];
+        } else {
+            this.pollDict[id] = new PollInstance(pollData);
+        }
 
-        this.pollDict[id] = new PollInstance(pollData);
+        return true;
     }
-}
 
-const setPoll = (pollData) => {
-    pollInstance.poll = pollData;
-    pollInstance.submissions = [0, 0, 0, 0];
-    console.log('poll has been set. read to send: ' + !pollInstance.sent);
-}
+    deletePoll(id) {
+        // Deletes poll with id: id. Returns boolean for success/fail
+        if(this.pollDict[id]) {
+            delete this.pollDict[id];
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-const submitAnswer = (answer) => {
-    pollInstance.submissions[answer] += 1;
-}
+    submitAnswer(id, answer) {
+        if(this.pollDict[id]) {
+            this.pollDict[id].submissions[answer] += 1;
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-const viewSubmissions = () => {
-    return pollInstance.submissions;
-}
+    viewSubmissions(id) {
+        if(this.pollDict[id]) {
+            return this.pollDict[id].submissions;
+        } else {
+            return null;
+        }
+    }
 
-const clearAll = () => {
-    pollInstance = {
-        poll: {
-            question: '',
-            selections: [],
-            answer: ''
-        },
-        submissions: [0, 0, 0, 0]
+    clearAll() {
+        this.pollDict = {};
+        return true;
     }
 }
 
