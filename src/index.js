@@ -17,25 +17,29 @@ app.get('/', function (req, res) {
 app.get("/pollStream", (req, res) => {
     // Server-Sent Event: Periodically send out poll to clients
     // that have connected to this stream with an eventSource
-    res.set({
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive"
-    })
-  
-    // Function that periodically sends new data to this client
-    let eventStream = setInterval(() => {
-        res.write(`data: ${JSON.stringify(pollService.getPoll(req.query.id))}\n\n`);
-    }, 2000)
-
-    // Stop sending responses if client closes connection (closes the page)
-    req.on('close', () => {
-        clearInterval(eventStream);
-        res.end();
-    })
-
-    // Send initial data
-    res.write(`data: ${JSON.stringify(pollService.getPoll(req.query.id))}\n\n`);
+    if(req.query.id in pollService.pollDict) {
+        res.set({
+            "Content-Type": "text/event-stream",
+            "Cache-Control": "no-cache",
+            Connection: "keep-alive"
+          })
+        
+          // Function that periodically sends new data to this client
+          let eventStream = setInterval(() => {
+              res.write(`data: ${JSON.stringify(pollService.getPoll(req.query.id))}\n\n`);
+          }, 2000)
+      
+          // Stop sending responses if client closes connection (closes the page)
+          req.on('close', () => {
+              clearInterval(eventStream);
+              res.end();
+          })
+      
+          // Send initial data
+          res.write(`data: ${JSON.stringify(pollService.getPoll(req.query.id))}\n\n`);
+    } else {
+        res.status(400).send('Invalid ID');
+    }
 })
 
 app.get("/reponseStream", (req, res) => {
@@ -84,6 +88,7 @@ app.post('/createPoll', express.json(), function (req, res) {
 })
 
 app.get('/connectRoom', function (req, res) {
+    // Allows client to query if room ID exists to connect to
     if(req.query.id in pollService.pollDict) {
         res.sendStatus(200);
     } else {
